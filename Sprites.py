@@ -1,7 +1,16 @@
+# name: Sprites.py
+# author: bartramj025070
+
+# version: v1.0.0r
+
+# imports
+
 import os
 import json
 
 import pygame
+
+# variables
 
 AllSprites = []
 AllColors = {
@@ -17,6 +26,8 @@ AllColors = {
     }
 }
 
+# methods
+
 def get_color(name):
     return AllColors[name]
 
@@ -25,26 +36,30 @@ def get_pycolor(name):
     return pygame.Color(int(color_table["r"]), int(color_table["g"]), int(color_table["b"]))
 
 class Sprite:
-    def __init__(self, identifier, binary_data, color, width=16, height=16):
+    def __init__(self, identifier, binary_data, color, window_name="window", width=16, height=16):
         self.identifier=identifier
         self.binary_data=binary_data
         self.color=color
         self.width=width
         self.height=height
         self.size=1
+        self.position=["", ""]
+        self.window_name=window_name
 
     def deploy(self):
         print("Deploying Sprite File: " + self.identifier + "...")
+        self.position=[f"{self.window_name}.get_width() / 2", f"{self.window_name}.get_height() / 2"]
 
-    def add(self, window_name):
+    def move(self, newPos):
+        self.position=newPos
+
+    def add(self):
         color_table = AllColors[self.color]
 
         r = str(int(color_table["r"]))
         g = str(int(color_table["g"]))
         b = str(int(color_table["b"]))
 
-        dimension_x = f"int({window_name}.get_width() / 2)"
-        dimension_y = f"int({window_name}.get_height() / 2)"
 
         col_str = "pygame.Color(" + r + ", " + g + ", " + b + ")"
 
@@ -62,8 +77,8 @@ class Sprite:
                 byteIndex += 1
                 isFilled = (int(byte)==1)
                 if isFilled:
-                    rect_str = f"pygame.Rect({dimension_x} + {byteIndex * 7}, {dimension_y} + {chunkIndex * 7}, int(7), int(7))"
-                    response_chunk.append(f"pygame.draw.rect({window_name}, {col_str}, {rect_str})")
+                    rect_str = f"pygame.Rect(int({self.position[0]}) + {byteIndex * 7}, int({self.position[1]}) + {chunkIndex * 7}, int(7), int(7))"
+                    response_chunk.append(f"pygame.draw.rect({self.window_name}, {col_str}, {rect_str})")
                 else:
                     response_chunk.append("")
             response.append(response_chunk)
