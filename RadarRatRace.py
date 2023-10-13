@@ -14,17 +14,12 @@ import Sprites
 # variables
 
 game_running = True
+game_fps = 60
+
 window_data = {
 	"window_x": 800,
 	"window_y": 600
 }
-
-Audio.init()
-
-Audio.music.load("GameMusic.mp3")
-Audio.music.set_volume(1)
-
-Audio.music.play(-1)
 
 spr = Sprites.new("sprite0", [
 	[0,0,0,0,1,0,0,0,0],
@@ -44,8 +39,31 @@ spr.deploy()
 
 pygame.init()
 
+def startup():
+	if os.path.exists("fpsCap.lock"):
+		with open("fpsCap.lock", 'r') as cap:
+			content = cap.read()
+			game_fps=int(content.splitlines()[0])
+	else:
+		try:
+			game_fps=int(input("Welcome to the VIC 20 Radar Rat Race experience! You appear to be new, please set an FPS Limit: "))
+			with open("fpsCap.lock", 'w') as cap:
+				cap.write(str(game_fps))
+
+			string = f"GAME FPS SET TO: {str(game_fps)}"
+			print("\n" + ("*" * len(string)))
+			print(string)
+			print("*" * len(string))
+		except Exception as e:
+			print(f"Failure!\n{e}")
+			startup()
+
+startup()
+
 clock = pygame.time.Clock()
 window = pygame.display.set_mode((window_data["window_x"], window_data["window_y"]))
+
+# methods
 
 def add_sprite(sprite):
 	response = sprite.add()
@@ -54,6 +72,12 @@ def add_sprite(sprite):
 			if byte != "":
 				exec(byte)
 
+Audio.init()
+
+Audio.music.load("GameMusic.mp3")
+Audio.music.set_volume(1)
+
+Audio.music.play(-1)
 while game_running:
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
@@ -71,7 +95,7 @@ while game_running:
 	print(str(mouse_pos))
 
 	pygame.display.flip()
-	clock.tick(int(60))
+	clock.tick(int(game_fps))
 	if not Audio.music.get_busy():
 		print("hi")
 		Audio.music.rewind()
