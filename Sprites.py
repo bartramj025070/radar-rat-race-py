@@ -7,6 +7,7 @@
 
 import os
 import json
+import math
 
 import pygame
 
@@ -36,7 +37,7 @@ def get_pycolor(name):
     return pygame.Color(int(color_table["r"]), int(color_table["g"]), int(color_table["b"]))
 
 class Sprite:
-    def __init__(self, identifier, binary_data, color, window_name="window", width=16, height=16):
+    def __init__(self, identifier, binary_data, color, rotation=0, width=16, height=16, window_name="window"):
         self.identifier=identifier
         self.binary_data=binary_data
         self.color=color
@@ -45,6 +46,7 @@ class Sprite:
         self.size=1
         self.position=["", ""]
         self.window_name=window_name
+        self.rotation=rotation
 
     def deploy(self):
         print("Deploying Sprite File: " + self.identifier + "...")
@@ -52,6 +54,28 @@ class Sprite:
 
     def move(self, newPos):
         self.position=newPos
+
+    def set_rotation(self, newRot):
+        # Ensure the rotation is a valid multiple of 90 degrees
+        newRot = int(newRot) % 360  # Keep rotation within 0-359 degrees
+        if newRot % 90 != 0:
+            raise ValueError("Rotation angle must be a multiple of 90 degrees.")
+
+        # Calculate the difference between the current rotation and the target rotation
+        rotation_diff = (newRot - self.rotation) % 360
+
+        # Calculate the effective number of rotations needed
+        num_rotations = rotation_diff // 90
+
+        # Rotate the binary data to the specified angle
+        for _ in range(num_rotations):
+            self.binary_data = list(zip(*reversed(self.binary_data)))
+
+        # Update the rotation angle
+        self.rotation = newRot
+
+    #def set_rotation(self, newRot):
+    #    self.rotation=newRot
 
     def add(self):
         color_table = AllColors[self.color]
@@ -77,6 +101,10 @@ class Sprite:
                 byteIndex += 1
                 isFilled = (int(byte)==1)
                 if isFilled:
+                    rotated_rect_str = (
+                        f"pygame.Rect(int({self.position[0]}) + {byteIndex * 7}, int({self.position[1]}) + {chunkIndex * 7}, int(7), int(7))"
+                        f".rotate({self.rotation})"
+                    )
                     rect_str = f"pygame.Rect(int({self.position[0]}) + {byteIndex * 7}, int({self.position[1]}) + {chunkIndex * 7}, int(7), int(7))"
                     response_chunk.append(f"pygame.draw.rect({self.window_name}, {col_str}, {rect_str})")
                 else:

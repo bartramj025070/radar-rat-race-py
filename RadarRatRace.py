@@ -6,6 +6,8 @@
 import pygame
 from pygame import mixer as Audio
 
+import math
+
 import time
 import os
 
@@ -21,7 +23,9 @@ window_data = {
 	"window_y": 600
 }
 
-spr = Sprites.new("sprite0", [
+direction = 0
+
+spr = Sprites.new("playerRat", [
 	[0,0,0,0,1,0,0,0,0],
 	[0,1,1,0,1,0,1,1,0],
 	[1,1,1,1,1,1,1,1,1],
@@ -36,6 +40,22 @@ spr = Sprites.new("sprite0", [
 	[0,0,0,0,1,0,0,0,0],
 	[0,0,0,0,0,1,0,0,0],], "blue")
 spr.deploy()
+
+spr2 = Sprites.new("enemyRat0", [
+	[0,0,0,0,1,0,0,0,0],
+	[0,1,1,0,1,0,1,1,0],
+	[1,1,1,1,1,1,1,1,1],
+	[1,1,1,1,1,1,1,1,1],
+	[0,1,1,1,1,1,1,1,0],
+	[0,0,0,1,1,1,0,0,0],
+	[0,0,0,1,1,1,0,0,0],
+	[0,0,1,1,1,1,1,0,0],
+	[0,0,1,1,1,1,1,0,0],
+	[0,0,0,1,1,1,0,0,0],
+	[0,0,0,0,1,0,0,0,0],
+	[0,0,0,0,1,0,0,0,0],
+	[0,0,0,0,0,1,0,0,0],], "red")
+spr2.deploy()
 
 pygame.init()
 
@@ -83,19 +103,37 @@ while game_running:
 		if event.type == pygame.QUIT:
 			Sprites.quit()
 			game_running = False
+		else:
+			continue
 
-	pygame.display.set_caption("VC_20: Radar Rat Race")
 	window.fill(pygame.Color(255, 255, 255))
 
+	keys = pygame.key.get_pressed()
+	if keys[pygame.K_LEFT]:
+		direction = 270
+	elif keys[pygame.K_UP]:
+		direction = 0
+	elif keys[pygame.K_RIGHT]:
+		direction = 90
+	elif keys[pygame.K_DOWN]:
+		direction = 180
+
 	mouse_pos = pygame.mouse.get_pos()
+	pygame.display.set_caption("VC_20: Radar Rat Race")
 
 	add_sprite(spr)
-	spr.move([str(mouse_pos[0]), str(mouse_pos[1])])
+	add_sprite(spr2)
 
-	print(str(mouse_pos))
+	spr.move([str(mouse_pos[0]), str(mouse_pos[1])])
+	spr2.move([str(mouse_pos[0] +  (7 * 9)), str(mouse_pos[1])])
+
+	spr.set_rotation(direction)
+
+	# print(str(mouse_pos))
 
 	pygame.display.flip()
 	clock.tick(int(game_fps))
+	pygame.event.pump()
 	if not Audio.music.get_busy():
 		print("hi")
 		Audio.music.rewind()
